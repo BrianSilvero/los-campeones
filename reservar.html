@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0e0d0b" />
+  <title>Reservar mesa · Pizzería Los Campeones, Barracas</title>
+  <meta name="description" content="Reservá tu mesa en Pizzería Los Campeones, Av. Montes de Oca 856, Barracas. Martes a domingo de 8 a 00 h." />
+  <link rel="canonical" href="https://www.pizzerialoscampeones.com/reservar.html" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Pizzería Los Campeones" />
+  <meta property="og:title" content="Reservar mesa · Pizzería Los Campeones, Barracas" />
+  <meta property="og:description" content="Reservá tu mesa en Pizzería Los Campeones, Av. Montes de Oca 856, Barracas. Martes a domingo de 8 a 00 h." />
+  <meta property="og:url" content="https://www.pizzerialoscampeones.com/reservar.html" />
+  <meta property="og:image" content="https://www.pizzerialoscampeones.com/img/og-image.jpg" />
+  <meta property="og:locale" content="es_AR" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" type="image/png" href="img/favicon.png" />
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Carta", "item": "https://www.pizzerialoscampeones.com/"}, {"@type": "ListItem", "position": 2, "name": "Reservar mesa", "item": "https://www.pizzerialoscampeones.com/reservar.html"}]}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Pinyon+Script&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="topbar" id="topbar"></header>
+
+  <header class="sub-hero">
+    <div class="embers" aria-hidden="true"></div>
+    <p class="sub-script">Los Campeones</p>
+    <h1 data-i18n="resTitle"></h1>
+    <div class="hero-filete" data-filete></div>
+    <p data-i18n="resSub"></p>
+  </header>
+
+  <main class="res-main">
+    <!-- Formulario (vista de muestra, listo para conectar con el admin) -->
+    <form class="res-form" id="res-form" novalidate>
+      <p class="demo-note" data-i18n="resDemo"></p>
+
+      <div class="field" data-f="name">
+        <label for="f-name" data-i18n="resName"></label>
+        <input class="input" id="f-name" name="name" autocomplete="name" required />
+      </div>
+
+      <div class="field" data-f="phone">
+        <label for="f-phone" data-i18n="resPhone"></label>
+        <div class="phone-row">
+          <input class="input prefix" value="+54" aria-label="Código de país" readonly />
+          <input class="input" id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="11 2345 6789" required />
+        </div>
+      </div>
+
+      <div class="field" data-f="people">
+        <span class="field-label"><span data-icon="users"></span><span data-i18n="resPeople"></span></span>
+        <div class="people">
+          <button type="button" id="p-minus" aria-label="-">−</button>
+          <output id="p-out">2</output>
+          <button type="button" id="p-plus" aria-label="+">+</button>
+        </div>
+        <p class="hint" id="p-hint"></p>
+      </div>
+
+      <div class="field" data-f="date">
+        <span class="field-label"><span data-icon="calendar"></span><span data-i18n="resDate"></span></span>
+        <div class="days" id="days"></div>
+      </div>
+
+      <div class="field" data-f="shift">
+        <span class="field-label"><span data-icon="clock"></span><span data-i18n="resShift"></span></span>
+        <div class="chips" id="shifts"></div>
+      </div>
+
+      <div class="field" data-f="time">
+        <span class="field-label" data-i18n="resTime"></span>
+        <div class="times chips" id="times"></div>
+      </div>
+
+      <div class="field" data-f="reason">
+        <span class="field-label" data-i18n="resReason"></span>
+        <div class="chips" id="reasons"></div>
+      </div>
+
+      <div class="field">
+        <label for="f-notes" data-i18n="resNotes"></label>
+        <textarea class="input" id="f-notes" name="notes"></textarea>
+      </div>
+
+      <div class="summary" id="summary"></div>
+      <button class="btn btn-gold btn-block" type="submit"><span data-icon="cup" class="btn-ico"></span><span data-i18n="resSubmit"></span></button>
+      <p class="form-error" id="form-error"></p>
+    </form>
+
+    <!-- Confirmación -->
+    <section class="res-done" id="res-done">
+      <div class="done-cup" data-icon="cup"></div>
+      <h2 data-i18n="resDoneTitle"></h2>
+      <p data-i18n="resDoneText"></p>
+      <div class="summary" id="done-summary"></div>
+      <p class="demo-note" data-i18n="resDemo"></p>
+      <button class="btn btn-dark" id="res-again" type="button" data-i18n="resAnother"></button>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div data-filete class="footer-filete"></div>
+    <img src="img/logo-negativo.png" alt="" class="footer-logo" />
+    <p class="footer-note" data-i18n="footerNote"></p>
+  </footer>
+
+  <nav class="bottom-nav" id="bottom-nav" aria-label="Navegación"></nav>
+
+  <script src="js/data.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/reservar.js"></script>
+</body>
+</html>

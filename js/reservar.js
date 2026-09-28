@@ -1,0 +1,176 @@
+// ===== Reservas (vista de muestra) =====
+// Todo el formulario funciona; sólo falta conectar submitReservation()
+// con el panel de administración (Convex) cuando esté listo.
+
+const state = { people: 2, date: null, shift: null, time: null, reason: null };
+const DAYS_AHEAD = 21;
+
+const toMin = (hhmm) => { const [h, m] = hhmm.split(":").map(Number); return h * 60 + m; };
+const toHHMM = (min) => `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+const loc = () => LANGS.find((l) => l.id === lang).locale;
+
+// Fecha de hoy en Buenos Aires (YYYY-MM-DD)
+function todayBA() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Argentina/Buenos_Aires" }).format(new Date());
+}
+function addDays(iso, n) {
+  const d = new Date(iso + "T12:00:00");
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+const weekday = (iso) => new Date(iso + "T12:00:00").getDay();
+
+// ----- Render -----
+function renderPeople() {
+  $("#p-out").innerHTML = `${state.people}<small>${t("resPeople").toLowerCase()}</small>`;
+  $("#p-minus").disabled = state.people <= 1;
+  $("#p-plus").disabled = state.people >= RESERVATIONS.maxPeople;
+  $("#p-hint").innerHTML = state.people >= RESERVATIONS.maxPeople
+    ? `${t("resMax").replace("{max}", RESERVATIONS.maxPeople)} <a href="${waLink(t("wa"))}" target="_blank" rel="noopener">WhatsApp →</a>`
+    : "";
+}
+
+function renderDays() {
+  const today = todayBA();
+  let html = "";
+  for (let i = 0; i < DAYS_AHEAD; i++) {
+    const iso = addDays(today, i);
+    const d = new Date(iso + "T12:00:00");
+    const closed = !BUSINESS.openDays.includes(weekday(iso));
+    const top = i === 0 ? t("today") : d.toLocaleDateString(loc(), { weekday: "short" });
+    html += `<button type="button" class="day ${state.date === iso ? "on" : ""}" data-date="${iso}" ${closed ? "disabled title='" + t("resMonday") + "'" : ""}>
+      <small>${top}</small><b>${d.getDate()}</b><span>${d.toLocaleDateString(loc(), { month: "short" })}</span></button>`;
+  }
+  $("#days").innerHTML = html;
+}
+
+function renderShifts() {
+  $("#shifts").innerHTML = RESERVATIONS.shifts.map((s) =>
+    `<button type="button" class="chip ${state.shift === s.id ? "on" : ""}" data-shift="${s.id}">${s.name[lang]}</button>`
+  ).join("");
+}
+
+function slotsFor(shiftId) {
+  const s = RESERVATIONS.shifts.find((x) => x.id === shiftId);
+  if (!s) return [];
+  const out = [];
+  for (let m = toMin(s.from); m <= toMin(s.to); m += RESERVATIONS.slotMinutes) out.push(toHHMM(m));
+  return out;
+}
+
+function renderTimes() {
+  const { hour, minute } = nowBA();
+  const isToday = state.date === todayBA();
+  const nowMin = hour * 60 + minute + 60; // mínimo 1 h de anticipación
+  const slots = slotsFor(state.shift);
+  $("#times").innerHTML = slots.length
+    ? slots.map((s) => {
+        const past = isToday && toMin(s) < nowMin;
+        return `<button type="button" class="chip ${state.time === s ? "on" : ""}" data-time="${s}" ${past ? "disabled" : ""}>${s}</button>`;
+      }).join("")
+    : `<p class="hint">—</p>`;
+}
+
+function renderReasons() {
+  $("#reasons").innerHTML = RESERVATIONS.reasons[lang].map((r, i) =>
+    `<button type="button" class="chip ${state.reason === i ? "on" : ""}" data-reason="${i}">${r}</button>`
+  ).join("");
+}
+
+function summaryText() {
+  const date = state.date
+    ? new Date(state.date + "T12:00:00").toLocaleDateString(loc(), { weekday: "long", day: "numeric", month: "long" })
+    : "—";
+  return `${ICONS.calendar}<span><b>${state.people}</b> ${t("resPeople").toLowerCase()} · <b>${date}</b>${state.time ? ` · <b>${state.time} h</b>` : ""}</span>`;
+}
+function renderSummary() { $("#summary").innerHTML = summaryText(); }
+
+function renderAll() {
+  applyTexts();
+  $("#f-notes").placeholder = t("resNotesPh");
+  renderPeople(); renderDays(); renderShifts(); renderTimes(); renderReasons(); renderSummary();
+}
+
+// ----- Eventos -----
+$("#p-minus").onclick = () => { state.people = Math.max(1, state.people - 1); renderPeople(); renderSummary(); };
+$("#p-plus").onclick = () => { state.people = Math.min(RESERVATIONS.maxPeople, state.people + 1); renderPeople(); renderSummary(); };
+
+$("#days").onclick = (e) => {
+  const b = e.target.closest("[data-date]");
+  if (!b || b.disabled) return;
+  state.date = b.dataset.date; state.time = null;
+  renderDays(); renderTimes(); renderSummary(); clearError("date");
+};
+$("#shifts").onclick = (e) => {
+  const b = e.target.closest("[data-shift]");
+  if (!b) return;
+  state.shift = b.dataset.shift; state.time = null;
+  renderShifts(); renderTimes(); renderSummary(); clearError("shift");
+};
+$("#times").onclick = (e) => {
+  const b = e.target.closest("[data-time]");
+  if (!b || b.disabled) return;
+  state.time = b.dataset.time;
+  renderTimes(); renderSummary(); clearError("time");
+};
+$("#reasons").onclick = (e) => {
+  const b = e.target.closest("[data-reason]");
+  if (!b) return;
+  state.reason = +b.dataset.reason;
+  renderReasons(); clearError("reason");
+};
+$$(".input").forEach((i) => i.addEventListener("input", () => clearError(i.name)));
+
+function clearError(f) { $(`.field[data-f="${f}"]`)?.classList.remove("error"); $("#form-error").textContent = ""; }
+
+// ----- Envío -----
+// TODO (admin): reemplazar por la llamada a Convex, por ejemplo:
+//   await convex.mutation(api.reservations.create, data)
+// El panel de administración verá la reserva y la confirmará.
+async function submitReservation(data) {
+  console.info("Reserva (muestra, no se envía):", data);
+  return { ok: true, id: "DEMO-" + Date.now() };
+}
+
+$("#res-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = $("#f-name").value.trim();
+  const phone = $("#f-phone").value.replace(/\D/g, "");
+  const missing = [];
+  if (!name) missing.push("name");
+  if (phone.length < 8) missing.push("phone");
+  if (!state.date) missing.push("date");
+  if (!state.shift) missing.push("shift");
+  if (!state.time) missing.push("time");
+  if (state.reason === null) missing.push("reason");
+  if (missing.length) {
+    missing.forEach((f) => $(`.field[data-f="${f}"]`).classList.add("error"));
+    $("#form-error").textContent = t("resRequired");
+    $(`.field[data-f="${missing[0]}"]`).scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+
+  const data = {
+    name, phone: "+54" + phone, people: state.people, date: state.date, time: state.time,
+    shift: state.shift, reason: RESERVATIONS.reasons.es[state.reason], notes: $("#f-notes").value.trim(), lang,
+    createdAt: new Date().toISOString(), status: "pendiente",
+  };
+  const res = await submitReservation(data);
+  if (res.ok) {
+    $("#done-summary").innerHTML = summaryText();
+    $("#res-form").style.display = "none";
+    $("#res-done").classList.add("show");
+    scrollTo({ top: 0, behavior: "smooth" });
+  }
+});
+
+$("#res-again").onclick = () => {
+  $("#res-done").classList.remove("show");
+  $("#res-form").style.display = "";
+  $("#res-form").reset();
+  Object.assign(state, { people: 2, date: null, shift: null, time: null, reason: null });
+  renderAll();
+};
+
+mountChrome("book", renderAll);
+renderAll();
