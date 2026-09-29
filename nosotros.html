@@ -51,6 +51,12 @@
       <div class="stat"><span class="num">★★★</span><span class="lbl" data-i18n="stat3"></span></div>
     </div>
 
+    <section class="reviews reveal" id="resenas">
+      <h2 class="section-title" data-i18n="reviewsTitle"></h2>
+      <p class="rv-sub" data-i18n="reviewsSub"></p>
+      <div id="reviews"></div>
+    </section>
+
     <section class="barrio reveal">
       <span class="frame-corner tl"></span><span class="frame-corner tr"></span>
       <span class="frame-corner bl"></span><span class="frame-corner br"></span>
@@ -64,6 +70,18 @@
     <h2 class="section-title reveal" data-i18n="galleryTitle"></h2>
     <div class="gallery" id="gallery"></div>
 
+    <!-- Acceso a Contacto (los datos completos están en contacto.html) -->
+    <a href="contacto.html" class="visit-cta reveal">
+      <span class="vc-ico" data-icon="pin"></span>
+      <span class="vc-text">
+        <b data-i18n="visitCtaTitle"></b>
+        <small data-i18n="visitCtaSub"></small>
+      </span>
+      <span class="vc-btn"><span data-i18n="visitCtaBtn"></span><span data-icon="arrow"></span></span>
+    </a>
+
+    <!-- Bloque "Visitanos" original: se conserva oculto para no repetir la info de Contacto -->
+    <div class="visit-legacy" hidden>
     <h2 class="section-title reveal" data-i18n="visitTitle"></h2>
     <div class="info-grid">
       <div class="info-card reveal">
@@ -86,6 +104,8 @@
         <p><a id="email"></a></p>
       </div>
     </div>
+
+    </div><!-- /visit-legacy -->
 
     <section class="faq">
       <h2 class="section-title reveal" data-i18n="faqTitle"></h2>

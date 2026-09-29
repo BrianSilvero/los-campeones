@@ -18,8 +18,12 @@ const BUSINESS = {
   whatsappLabel: "11-2479-5495",
   phones: ["11-4301-7813", "11-4301-0572", "11-4303-8456", "11-2110-8888"],
   mainPhone: "+541143017813",
-  instagram: "", // pegá acá el link cuando lo tengan
-  facebook: "",
+  instagram: "https://www.instagram.com/pizzerialoscampeones/",
+  facebook: "https://www.facebook.com/tradicionartesanaldesde1954/",
+  // Google: ficha del local (reseñas)
+  googlePlaceId: "ChIJc8k1qEvLvJURZSafu2EXv4U",
+  googleWriteReview: "https://search.google.com/local/writereview?placeid=ChIJc8k1qEvLvJURZSafu2EXv4U",
+  googleReviews: "https://search.google.com/local/reviews?placeid=ChIJc8k1qEvLvJURZSafu2EXv4U",
   // 0 = domingo … 6 = sábado. Lunes cerrado.
   openDays: [0, 2, 3, 4, 5, 6],
   openFrom: 8, // 08:00
@@ -271,4 +275,23 @@ const FAQ = [
     a: { es: "Efectivo en delivery. Débito y crédito en el local.", en: "Cash for delivery. Debit and credit cards in store.", pt: "Dinheiro na entrega. Débito e crédito no local." } },
   { q: { es: "¿Tienen opciones para alergias o dietas especiales?", en: "Do you have options for allergies or special diets?", pt: "Há opções para alergias ou dietas especiais?" },
     a: { es: "Marcamos las opciones vegetarianas en la carta. Si tenés alguna alergia o sos celíaco, consultanos por WhatsApp antes de pedir.", en: "Vegetarian options are marked on the menu. If you have an allergy or celiac disease, please ask us on WhatsApp first.", pt: "As opções vegetarianas estão marcadas. Se tiver alergia ou doença celíaca, consulte-nos pelo WhatsApp antes." } },
+];
+
+// Prefijos de teléfono (reservas). flag = código de bandera en js/icons.js
+const PHONE_CODES = [
+  { flag: "ar", code: "+54", name: "Argentina" },
+  { flag: "uy", code: "+598", name: "Uruguay" },
+  { flag: "cl", code: "+56", name: "Chile" },
+  { flag: "br", code: "+55", name: "Brasil" },
+  { flag: "py", code: "+595", name: "Paraguay" },
+  { flag: "bo", code: "+591", name: "Bolivia" },
+  { flag: "pe", code: "+51", name: "Perú" },
+  { flag: "co", code: "+57", name: "Colombia" },
+  { flag: "mx", code: "+52", name: "México" },
+  { flag: "us", code: "+1", name: "EE.UU. / Canadá" },
+  { flag: "es", code: "+34", name: "España" },
+  { flag: "it", code: "+39", name: "Italia" },
+  { flag: "fr", code: "+33", name: "Francia" },
+  { flag: "gb", code: "+44", name: "Reino Unido" },
+  { flag: "de", code: "+49", name: "Alemania" },
 ];

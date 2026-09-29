@@ -82,8 +82,8 @@ const Cart = (() => {
         <button class="${mode === "pickup" ? "on" : ""}" data-mode="pickup">${t("pickup")}</button>
         <button class="${mode === "delivery" ? "on" : ""}" data-mode="delivery">${t("delivery")}</button>
       </div>
-      <label class="cart-field"><span>${t("yourName")}</span><input class="input" id="c-name" autocomplete="name" /></label>
-      <label class="cart-field" id="c-addr-wrap" ${mode === "delivery" ? "" : "hidden"}><span>${t("address")}</span><input class="input" id="c-addr" autocomplete="street-address" placeholder="${t("addressPh")}" /></label>
+      <label class="cart-field"><span>${t("yourName")} <i class="req">*</i></span><input class="input" id="c-name" autocomplete="name" /></label>
+      <label class="cart-field" id="c-addr-wrap" ${mode === "delivery" ? "" : "hidden"}><span>${t("address")} <i class="req">*</i></span><input class="input" id="c-addr" autocomplete="street-address" placeholder="${t("addressPh")}" /></label>
       <label class="cart-field"><span>${t("notesOrder")}</span><input class="input" id="c-notes" placeholder="${t("notesOrderPh")}" /></label>
       <p class="cart-note">${mode === "delivery" ? t("deliveryNote") + " " : ""}${t("payNote")}</p>
 
@@ -95,18 +95,41 @@ const Cart = (() => {
     updateLink();
   }
 
+  // Mensaje para el local: sin precios (los confirma el local / la automatización)
+  // y con etiquetas fijas en español para que sea fácil de leer y de procesar.
   function message() {
-    const lines = [t("waOrderHead"), ""];
-    items.forEach((it) => lines.push(`• ${it.qty} × ${it.name}${it.detail ? ` (${it.detail})` : ""} — ${money(it.qty * it.price)}`));
-    lines.push("", `${t("waTotal")}: ${money(total())}`);
     const name = $("#c-name")?.value.trim();
     const addr = $("#c-addr")?.value.trim();
     const notes = $("#c-notes")?.value.trim();
-    lines.push(mode === "delivery" ? `${t("waDelivery")} ${addr || "—"}` : t("waPickup"));
-    if (name) lines.push(`${t("waName")}: ${name}`);
-    if (notes) lines.push(`${t("waNotes")}: ${notes}`);
+    const lines = ["*PEDIDO WEB · Pizzería Los Campeones*", ""];
+    lines.push(`Nombre: ${name}`);
+    if (mode === "delivery") {
+      lines.push("Forma de entrega: Envío a domicilio");
+      lines.push(`Dirección de envío: ${addr}`);
+    } else {
+      lines.push("Forma de entrega: Retiro por el local (Av. Montes de Oca 856)");
+    }
+    lines.push("", "Productos:");
+    items.forEach((it) => lines.push(`• ${it.qty} × ${it.name}${it.detail ? ` (${it.detail.toLowerCase()})` : ""}`));
+    if (notes) lines.push("", `Aclaraciones: ${notes}`);
     return lines.join("\n");
   }
+
+  // Campos obligatorios: nombre siempre; dirección sólo si es envío a domicilio
+  function validate() {
+    const bad = [];
+    if (!$("#c-name")?.value.trim()) bad.push("#c-name");
+    if (mode === "delivery" && !$("#c-addr")?.value.trim()) bad.push("#c-addr");
+    $$(".cart-field", $("#cart")).forEach((f) => f.classList.remove("error"));
+    bad.forEach((sel) => {
+      const f = $(sel).closest(".cart-field");
+      f.classList.add("error");
+      if (!$(".req-msg", f)) f.insertAdjacentHTML("beforeend", `<em class="req-msg">${t("reqField")}</em>`);
+    });
+    if (bad.length) $(bad[0]).focus();
+    return !bad.length;
+  }
+
   function updateLink() { const a = $("#c-send"); if (a) a.href = waLink(message()); }
 
   function refresh() { save(); renderBar(); if (document.body.classList.contains("cart-open")) renderCart(); document.dispatchEvent(new Event("cart:change")); }
@@ -144,7 +167,12 @@ const Cart = (() => {
     if (b.dataset.mode) { mode = b.dataset.mode; renderCart(); }
     if (b.id === "c-clear") { items = []; refresh(); renderCart(); }
   });
-  $("#cart-body").addEventListener("input", () => {
+  $("#cart-body").addEventListener("click", (e) => {
+    if (e.target.closest("#c-send") && !validate()) e.preventDefault();
+  }, true);
+  $("#cart-body").addEventListener("input", (e) => {
+    const f = e.target.closest(".cart-field");
+    if (f && e.target.value.trim()) { f.classList.remove("error"); $(".req-msg", f)?.remove(); }
     renderCart.form = { name: $("#c-name")?.value, addr: $("#c-addr")?.value, notes: $("#c-notes")?.value };
     updateLink();
   });

@@ -1486,3 +1486,231 @@ body.contact-open .contact-sheet { transform: translate(-50%, 0); }
 /* Salón: los tamaños son solo informativos, no se pueden seleccionar */
 .mode-salon .sp { pointer-events: none; user-select: none; }
 .mode-salon .sp.on { border-color: rgba(164,130,63,.25); background: transparent; box-shadow: none; }
+
+/* =====================================================================
+   v14 · Brillo del logo solo sobre el dibujo (sin rectángulo)
+   ===================================================================== */
+.splash .shine-logo { isolation: auto; overflow: visible; }
+.splash .shine {
+  transform: none; mix-blend-mode: normal;
+  background: linear-gradient(105deg, transparent 42%, rgba(255, 240, 200, .95) 50%, transparent 58%) no-repeat;
+  background-size: 300% 100%; background-position: 150% 0;
+  -webkit-mask: url(../img/logo-splash.png) center / 100% 100% no-repeat;
+          mask: url(../img/logo-splash.png) center / 100% 100% no-repeat;
+  animation: shineMask .95s .75s var(--ease) forwards;
+}
+@keyframes shineMask { from { background-position: 150% 0; } to { background-position: -50% 0; } }
+
+/* =====================================================================
+   v14 · CONTACTO · PREFIJOS · REDES · RESEÑAS · VALIDACIÓN
+   ===================================================================== */
+.splash .shine-logo { width: min(440px, 82vw); }
+
+/* ---- Barra de abajo con 5 botones: más aire para no tocar el equivocado ---- */
+.bottom-nav.bn-5 a { font-size: 10.5px; gap: 3px; padding: 0 2px; min-width: 0; }
+.bottom-nav.bn-5 .nav-ico { width: 21px; height: 21px; }
+.bottom-nav.bn-5 a span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.bottom-nav a { -webkit-tap-highlight-color: transparent; }
+.bottom-nav a:active { background: rgba(201,168,106,.1); }
+@media (max-width: 359px) { .bottom-nav.bn-5 a { font-size: 9.5px; } .bottom-nav.bn-5 .nav-ico { width: 19px; height: 19px; } }
+
+/* ---- Pie: dorado suave + redes ---- */
+.footer-small { font-weight: 600; color: var(--gold-2); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; }
+.footer-social { display: flex; justify-content: center; gap: 14px; margin-top: 22px; }
+.footer-social a {
+  width: 46px; height: 46px; padding: 12px; border-radius: 50%; display: grid; place-items: center;
+  border: 1px solid rgba(201,168,106,.45); color: var(--gold-3); transition: background .2s, color .2s, transform .2s;
+}
+.footer-social a:hover { background: var(--gold-grad); color: var(--black); transform: translateY(-2px); }
+.footer-social svg { width: 100%; height: 100%; }
+.footer-copy { margin-top: 16px; font-size: 12px; color: var(--muted-dark); opacity: .8; }
+
+/* ---- Página Contacto ---- */
+.contact-main { width: min(960px, 100%); margin: 0 auto; padding: 24px 16px 60px; }
+.quick-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+.qa {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 84px; padding: 10px 6px;
+  border-radius: 18px; background: var(--black); color: var(--cream); font-weight: 600; font-size: 14px; text-align: center;
+  box-shadow: 0 8px 22px rgba(14,13,11,.18); transition: transform .15s;
+}
+.qa:active { transform: scale(.97); }
+.qa-ico { width: 26px; height: 26px; color: var(--gold-2); }
+.qa-wa { background: var(--wa); color: #fff; }
+.qa-wa .qa-ico { color: #fff; }
+.contact-grid { display: grid; gap: 12px; }
+.contact-grid .info-card h2 { display: flex; align-items: center; gap: 8px; font: 700 18px var(--serif); margin-bottom: 10px; }
+.contact-grid .info-card h2 [data-icon] { width: 22px; height: 22px; color: var(--gold); }
+.contact-grid .c-sub { margin-top: 16px; }
+.c-note { font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); margin-top: 4px; }
+.map-wrap { margin-top: 12px; border-radius: 14px; overflow: hidden; aspect-ratio: 16 / 10; background: var(--paper); border: 1px solid rgba(164,130,63,.2); }
+.map-wrap iframe { width: 100%; height: 100%; border: 0; display: block; }
+.c-status { margin-top: 12px; }
+.c-list { list-style: none; }
+.c-list a { display: flex; align-items: center; gap: 10px; padding: 9px 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.c-list li + li { border-top: 1px dashed rgba(164,130,63,.25); }
+.c-list svg { width: 16px; height: 16px; color: var(--gold); }
+.c-book { margin-top: 16px; }
+.mode-salon .c-book { display: none !important; }
+@media (min-width: 760px) {
+  .contact-grid { grid-template-columns: 1.4fr 1fr; }
+  .contact-grid .c-where { grid-row: span 3; }
+}
+
+/* ---- Selector de prefijo con banderas ---- */
+.cc-picker { position: relative; flex: none; display: flex; gap: 6px; }
+.cc-btn { width: auto; min-width: 96px; display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 0 12px; }
+.cc-btn i { font-style: normal; font-size: 11px; opacity: .6; margin-inline-start: auto; }
+.cc-flag { width: 24px; height: 16px; border-radius: 3px; overflow: hidden; flex: none; box-shadow: 0 0 0 1px rgba(0,0,0,.08); display: block; }
+.cc-flag svg { width: 100%; height: 100%; display: block; }
+.cc-custom { width: 72px; text-align: center; }
+.cc-menu {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 20; width: 260px; max-height: 300px; overflow: auto; list-style: none;
+  background: var(--white); border-radius: 14px; padding: 6px; box-shadow: 0 16px 40px rgba(0,0,0,.2);
+  opacity: 0; transform: translateY(-6px); pointer-events: none; transition: all .18s var(--ease);
+}
+.cc-picker.open .cc-menu { opacity: 1; transform: none; pointer-events: auto; }
+.cc-menu li { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 14.5px; }
+.cc-menu li:hover { background: var(--cream); }
+.cc-menu li.on { background: var(--gold-soft); }
+.cc-name { flex: 1; }
+.cc-menu b { font-variant-numeric: tabular-nums; color: var(--muted); font-weight: 600; }
+.phone-row { flex-wrap: nowrap; }
+.phone-row #f-phone { min-width: 0; }
+@media (max-width: 380px) { .cc-btn { min-width: 84px; padding: 0 8px; gap: 6px; } .cc-custom { width: 60px; } }
+
+/* ---- Campos obligatorios del pedido ---- */
+.req { color: var(--red); font-style: normal; }
+.cart-field.error .input { border-color: var(--red); box-shadow: 0 0 0 3px rgba(200,16,46,.12); }
+.req-msg { display: block; margin-top: 4px; font-size: 12px; font-style: normal; font-weight: 600; color: var(--red); }
+
+/* ---- Reseñas ---- */
+.reviews { margin: 8px 0 44px; }
+.rv-sub { margin: -8px 0 16px; color: var(--muted); font-size: 14px; }
+.rv-fallback { color: var(--muted); margin-bottom: 14px; }
+.stars {
+  --pct: calc(var(--r) / 5 * 100%); display: inline-block; font-size: 15px; letter-spacing: 2px; line-height: 1;
+  background: linear-gradient(90deg, #f5b301 var(--pct), #d9d2c3 var(--pct)); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.rv-summary { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 18px; background: var(--black); color: var(--cream); margin-bottom: 14px; }
+.rv-score { font: 800 40px/1 var(--serif); color: var(--gold-3); }
+.rv-summary .stars { font-size: 20px; }
+.rv-summary small { display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 13px; color: var(--muted-dark); }
+.rv-summary small svg { width: 14px; height: 14px; }
+.rv-list { display: grid; gap: 10px; margin-bottom: 16px; }
+.rv-card { background: var(--white); border-radius: 16px; padding: 16px; border: 1px solid rgba(164,130,63,.15); }
+.rv-card header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.rv-card img, .rv-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; flex: none; }
+.rv-avatar { display: grid; place-items: center; background: var(--gold-soft); color: var(--gold); font-weight: 700; }
+.rv-card header b { display: block; font-size: 14.5px; }
+.rv-card header small { color: var(--muted); font-size: 12px; }
+.rv-card p { margin-top: 6px; font-size: 14.5px; color: var(--ink); display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
+.rv-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.rv-actions .btn { flex: 1 1 200px; }
+.rv-actions svg { width: 18px; height: 18px; }
+.btn-outline-dark { background: var(--white); color: var(--ink); border: 1.5px solid rgba(164,130,63,.4); }
+@media (min-width: 760px) { .rv-list { grid-template-columns: 1fr 1fr; } }
+
+/* ---- Sello de Google en la carta ---- */
+.g-badge-wrap { display: flex; justify-content: center; margin: 0 0 12px; }
+.g-badge-wrap[hidden] { display: none; }
+.g-badge {
+  display: inline-flex; align-items: center; gap: 7px; padding: 7px 14px; border-radius: 999px;
+  background: var(--white); border: 1px solid rgba(164,130,63,.25); box-shadow: 0 3px 10px rgba(60,45,20,.06);
+  font-size: 12.5px; color: var(--muted);
+}
+.g-badge svg { width: 16px; height: 16px; }
+.g-badge b { font-size: 14px; color: var(--ink); }
+.g-badge .stars { font-size: 12px; }
+.g-badge i { font-style: normal; color: var(--gold); font-size: 16px; }
+@media (max-width: 380px) { .g-badge .stars { display: none; } }
+.bottom-nav.bn-5 { grid-template-columns: repeat(5, 1fr); }
+.cc-picker.is-other .cc-btn { min-width: 0; }
+.cc-picker.is-other .cc-btn span:not(.cc-flag) { display: none; }
+.phone-row #f-phone { flex: 1 1 auto; width: auto; }
+@media (max-width: 359px) { .sign-board { padding: 4px 7px 3px; } .sign-board b { font-size: 9.5px; letter-spacing: 1px; } .topbar { gap: 6px; } }
+.info-card .c-list a { display: flex; }
+
+/* =====================================================================
+   v16 · Brillo más visible (sin rectángulo) · Acceso a Contacto · Pie compacto
+   ===================================================================== */
+/* Brillo: banda más ancha y más lenta, sólo sobre el dibujo del logo */
+.splash .shine {
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 232, 170, .55) 42%, rgba(255, 246, 215, 1) 50%, rgba(255, 232, 170, .55) 58%, transparent 70%) no-repeat;
+  background-size: 260% 100%;
+  animation: shineMask 1.5s .55s cubic-bezier(.45, .05, .35, 1) forwards;
+}
+.splash .shine-logo img { filter: drop-shadow(0 0 18px rgba(201, 168, 106, .18)); }
+
+/* Historia → Contacto */
+.visit-legacy[hidden] { display: none !important; }
+.visit-cta {
+  display: flex; align-items: center; gap: 14px; margin: 8px 0 44px; padding: 18px;
+  border-radius: 20px; background: var(--black); color: var(--cream);
+  box-shadow: 0 10px 28px rgba(14,13,11,.18); transition: transform .2s var(--ease);
+}
+.visit-cta:hover { transform: translateY(-2px); }
+.vc-ico { width: 46px; height: 46px; padding: 11px; border-radius: 50%; border: 1px solid rgba(201,168,106,.5); color: var(--gold-2); flex: none; }
+.vc-text { flex: 1; min-width: 0; }
+.vc-text b { display: block; font: 700 17px/1.25 var(--serif); }
+.vc-text small { display: block; margin-top: 3px; font-size: 13px; color: var(--muted-dark); }
+.vc-btn {
+  display: inline-flex; align-items: center; gap: 6px; flex: none; padding: 10px 14px; border-radius: 999px;
+  background: var(--gold-grad); color: var(--black); font-weight: 700; font-size: 13.5px; white-space: nowrap;
+}
+.vc-btn [data-icon] { width: 16px; height: 16px; }
+@media (max-width: 480px) {
+  .visit-cta { flex-wrap: wrap; }
+  .vc-btn { width: 100%; justify-content: center; padding: 12px; }
+}
+
+/* Pie más compacto (mismo contenido, menos alto) */
+.footer { padding: 22px 16px 26px; }
+.footer-filete { width: 140px; margin: 0 auto 10px; }
+.footer-logo { width: 128px; margin: 0 auto 8px; }
+.footer-note { font-size: 10.5px; letter-spacing: 1.2px; line-height: 1.5; }
+.footer-addr { margin-top: 6px; font-size: 12.5px; }
+.footer-small { margin-top: 4px; font-size: 11px; }
+.footer-social { gap: 10px; margin-top: 12px; }
+.footer-social a { width: 38px; height: 38px; padding: 9px; }
+.footer-copy { margin-top: 10px; font-size: 11px; }
+@media (min-width: 900px) {
+  .footer {
+    display: grid; grid-template-columns: auto 1fr auto; grid-template-areas:
+      "logo note social" "logo addr social" "logo small social" "copy copy copy";
+    align-items: center; column-gap: 28px; row-gap: 2px; text-align: left;
+    padding: 24px max(32px, calc((100% - 1120px) / 2)) 96px;
+  }
+  .footer-filete { display: none; }
+  .footer-logo { grid-area: logo; margin: 0; width: 140px; }
+  .footer-note { grid-area: note; }
+  .footer-addr { grid-area: addr; justify-content: flex-start; margin: 0; }
+  .footer-small { grid-area: small; margin: 0; }
+  .footer-social { grid-area: social; margin: 0; }
+  .footer-copy { grid-area: copy; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(201,168,106,.15); text-align: center; }
+}
+@media (max-width: 899px) {
+  .footer-filete { width: 110px; margin-bottom: 8px; }
+  .footer-logo { width: 112px; }
+  .footer-note { font-size: 10px; }
+  .footer-social { margin-top: 10px; }
+  .footer-copy { margin-top: 8px; }
+}
+/* Brillo = copia iluminada del mismo logo, revelada por una franja que viaja.
+   Como es el propio logo, el brillo nunca sale de su dibujo (no hay rectángulo). */
+.splash .shine { display: none; }
+.splash .shine-img {
+  position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
+  filter: brightness(1.9) saturate(1.3) drop-shadow(0 0 6px rgba(255, 220, 150, .7));
+  -webkit-mask-image: linear-gradient(105deg, transparent 38%, #000 47%, #000 53%, transparent 62%);
+          mask-image: linear-gradient(105deg, transparent 38%, #000 47%, #000 53%, transparent 62%);
+  -webkit-mask-size: 300% 100%; mask-size: 300% 100%;
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: 100% 0; mask-position: 100% 0;
+  animation: shineSweep 1.5s .55s cubic-bezier(.45, .05, .35, 1) forwards;
+}
+@keyframes shineSweep {
+  from { -webkit-mask-position: 100% 0; mask-position: 100% 0; }
+  to   { -webkit-mask-position: 0% 0;   mask-position: 0% 0; }
+}
+@media (prefers-reduced-motion: reduce) { .splash .shine-img { display: none; } }
+.splash .shine-logo img.shine-img { filter: brightness(2) saturate(1.5) drop-shadow(0 0 5px rgba(255, 214, 130, .85)); }

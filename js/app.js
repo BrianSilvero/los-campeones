@@ -22,10 +22,10 @@ function startFlow() {
   gate.classList.add("shut");
   const T = [];
   T.push(setTimeout(() => gate.classList.replace("shut", "open"), 150));
-  T.push(setTimeout(() => gate.classList.replace("open", "shut"), 1500));
-  T.push(setTimeout(() => { $("#splash")?.remove(); showLangScreen(); }, 1950));
-  T.push(setTimeout(() => gate.classList.replace("shut", "open"), 2050));
-  T.push(setTimeout(() => gate.remove(), 2700));
+  T.push(setTimeout(() => gate.classList.replace("open", "shut"), 2100));
+  T.push(setTimeout(() => { $("#splash")?.remove(); showLangScreen(); }, 2550));
+  T.push(setTimeout(() => gate.classList.replace("shut", "open"), 2650));
+  T.push(setTimeout(() => gate.remove(), 3300));
   // tocar la pantalla saltea la intro
   const skip = () => {
     T.forEach(clearTimeout);
@@ -246,6 +246,7 @@ function renderPanel(dir = 0) {
 
 function renderAll() {
   applyTexts();
+  reviewBadge($("#g-badge"), "nosotros.html#resenas");
   if (window.Cart) Cart.renderBar();
   $("#wa-float").href = waLink(t("wa"));
   $("#footer-addr").textContent = BUSINESS.address;

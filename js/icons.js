@@ -100,3 +100,21 @@ function trophySVG(id) {
     <path class="gleam" d="M24 12v10c0 5 1.5 9 4 11.5" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
   </svg>`;
 }
+
+// Banderas extra para el selector de prefijos
+Object.assign(FLAGS, {
+  uy: `<svg viewBox="0 0 27 18"><rect width="27" height="18" fill="#fff"/><g fill="#0038a8"><rect y="2" width="27" height="2"/><rect y="6" width="27" height="2"/><rect y="10" width="27" height="2"/><rect y="14" width="27" height="2"/></g><rect width="10" height="10" fill="#fff"/><circle cx="5" cy="5" r="2.6" fill="#fcd116" stroke="#7b3f00" stroke-width=".4"/></svg>`,
+  cl: `<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#fff"/><rect y="10" width="30" height="10" fill="#d52b1e"/><rect width="10" height="10" fill="#0039a6"/><path d="m5 2.4.9 2.7h2.8l-2.3 1.7.9 2.7L5 7.8 2.7 9.5l.9-2.7-2.3-1.7h2.8z" fill="#fff"/></svg>`,
+  py: `<svg viewBox="0 0 30 18"><rect width="30" height="6" fill="#d52b1e"/><rect y="6" width="30" height="6" fill="#fff"/><rect y="12" width="30" height="6" fill="#0038a8"/><circle cx="15" cy="9" r="2" fill="none" stroke="#1f7a3a" stroke-width=".6"/></svg>`,
+  bo: `<svg viewBox="0 0 30 20"><rect width="30" height="6.67" fill="#d52b1e"/><rect y="6.67" width="30" height="6.67" fill="#f9e300"/><rect y="13.33" width="30" height="6.67" fill="#007934"/></svg>`,
+  pe: `<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#d91023"/><rect x="10" width="10" height="20" fill="#fff"/></svg>`,
+  co: `<svg viewBox="0 0 30 20"><rect width="30" height="10" fill="#fcd116"/><rect y="10" width="30" height="5" fill="#003893"/><rect y="15" width="30" height="5" fill="#ce1126"/></svg>`,
+  mx: `<svg viewBox="0 0 30 20"><rect width="10" height="20" fill="#006847"/><rect x="10" width="10" height="20" fill="#fff"/><rect x="20" width="10" height="20" fill="#ce1126"/><circle cx="15" cy="10" r="2.2" fill="#8c6b3a"/></svg>`,
+  us: `<svg viewBox="0 0 38 20"><rect width="38" height="20" fill="#fff"/><g fill="#b22234"><rect width="38" height="1.54"/><rect y="3.08" width="38" height="1.54"/><rect y="6.15" width="38" height="1.54"/><rect y="9.23" width="38" height="1.54"/><rect y="12.3" width="38" height="1.54"/><rect y="15.38" width="38" height="1.54"/><rect y="18.46" width="38" height="1.54"/></g><rect width="15.2" height="10.77" fill="#3c3b6e"/></svg>`,
+  it: `<svg viewBox="0 0 30 20"><rect width="10" height="20" fill="#009246"/><rect x="10" width="10" height="20" fill="#fff"/><rect x="20" width="10" height="20" fill="#ce2b37"/></svg>`,
+  fr: `<svg viewBox="0 0 30 20"><rect width="10" height="20" fill="#0055a4"/><rect x="10" width="10" height="20" fill="#fff"/><rect x="20" width="10" height="20" fill="#ef4135"/></svg>`,
+  de: `<svg viewBox="0 0 30 18"><rect width="30" height="6" fill="#000"/><rect y="6" width="30" height="6" fill="#dd0000"/><rect y="12" width="30" height="6" fill="#ffce00"/></svg>`,
+  globe: `<svg viewBox="0 0 24 24" fill="none" stroke="#a4823f" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.5-3.5-9s1-6.5 3.5-9z"/></svg>`,
+});
+ICONS.star2 = ICONS.star;
+ICONS.google = `<svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h5.9a5 5 0 0 1-2.2 3.3v2.7h3.5c2.1-1.9 3.3-4.7 3.3-8z"/><path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.5-2.7c-1 .7-2.3 1.1-3.8 1.1-2.9 0-5.4-2-6.3-4.7H2.1v2.8A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.7 14c-.2-.7-.4-1.4-.4-2.1s.1-1.4.4-2.1V7H2.1a11 11 0 0 0 0 9.9z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.2-3.1A11 11 0 0 0 2.1 7l3.6 2.8C6.6 7.4 9.1 5.4 12 5.4z"/></svg>`;

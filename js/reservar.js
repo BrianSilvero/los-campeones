@@ -2,6 +2,34 @@
 // Todo el formulario funciona; sólo falta conectar submitReservation()
 // con el panel de administración (Convex) cuando esté listo.
 
+// ----- Prefijo de teléfono con banderas -----
+let prefix = PHONE_CODES[0];
+function renderCC() {
+  const other = prefix === "other";
+  $("#cc-btn").innerHTML = other
+    ? `<span class="cc-flag">${FLAGS.globe}</span><span>${t("phoneOther")}</span><i>▾</i>`
+    : `<span class="cc-flag">${FLAGS[prefix.flag]}</span><span>${prefix.code}</span><i>▾</i>`;
+  $("#cc-custom").hidden = !other;
+  $("#cc-picker").classList.toggle("is-other", other);
+  $("#cc-menu").innerHTML = PHONE_CODES.map((p, i) => `
+    <li role="option" data-i="${i}" aria-selected="${prefix === p}" class="${prefix === p ? "on" : ""}">
+      <span class="cc-flag">${FLAGS[p.flag]}</span><span class="cc-name">${p.name}</span><b>${p.code}</b></li>`).join("") +
+    `<li role="option" data-i="other" class="${other ? "on" : ""}"><span class="cc-flag">${FLAGS.globe}</span><span class="cc-name">${t("phoneOther")}</span><b>+…</b></li>`;
+}
+$("#cc-btn").addEventListener("click", () => $("#cc-picker").classList.toggle("open"));
+$("#cc-menu").addEventListener("click", (e) => {
+  const li = e.target.closest("li");
+  if (!li) return;
+  prefix = li.dataset.i === "other" ? "other" : PHONE_CODES[+li.dataset.i];
+  $("#cc-picker").classList.remove("open");
+  renderCC();
+  if (prefix === "other") $("#cc-custom").focus();
+  clearError("phone");
+});
+$("#cc-custom").addEventListener("input", (e) => { e.target.value = "+" + e.target.value.replace(/\D/g, "").slice(0, 4); });
+document.addEventListener("click", (e) => { if (!$("#cc-picker").contains(e.target)) $("#cc-picker").classList.remove("open"); });
+const dialCode = () => (prefix === "other" ? $("#cc-custom").value.trim() : prefix.code);
+
 const state = { people: 2, date: null, shift: null, time: null, reason: null };
 const DAYS_AHEAD = 21;
 
@@ -88,7 +116,7 @@ function renderSummary() { $("#summary").innerHTML = summaryText(); }
 function renderAll() {
   applyTexts();
   $("#f-notes").placeholder = t("resNotesPh");
-  renderPeople(); renderDays(); renderShifts(); renderTimes(); renderReasons(); renderSummary();
+  renderCC(); renderPeople(); renderDays(); renderShifts(); renderTimes(); renderReasons(); renderSummary();
 }
 
 // ----- Eventos -----
@@ -138,7 +166,7 @@ $("#res-form").addEventListener("submit", async (e) => {
   const phone = $("#f-phone").value.replace(/\D/g, "");
   const missing = [];
   if (!name) missing.push("name");
-  if (phone.length < 8) missing.push("phone");
+  if (phone.length < 6 || dialCode().replace(/\D/g, "").length < 1) missing.push("phone");
   if (!state.date) missing.push("date");
   if (!state.shift) missing.push("shift");
   if (!state.time) missing.push("time");
@@ -151,7 +179,7 @@ $("#res-form").addEventListener("submit", async (e) => {
   }
 
   const data = {
-    name, phone: "+54" + phone, people: state.people, date: state.date, time: state.time,
+    name, phone: dialCode() + phone, people: state.people, date: state.date, time: state.time,
     shift: state.shift, reason: RESERVATIONS.reasons.es[state.reason], notes: $("#f-notes").value.trim(), lang,
     createdAt: new Date().toISOString(), status: "pendiente",
   };

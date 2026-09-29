@@ -49,7 +49,11 @@
       <div class="field" data-f="phone">
         <label for="f-phone" data-i18n="resPhone"></label>
         <div class="phone-row">
-          <input class="input prefix" value="+54" aria-label="Código de país" readonly />
+          <div class="cc-picker" id="cc-picker">
+            <button type="button" class="input cc-btn" id="cc-btn" aria-haspopup="listbox" aria-label="Código de país"></button>
+            <input class="input cc-custom" id="cc-custom" inputmode="tel" maxlength="5" placeholder="+" hidden aria-label="Código de país" />
+            <ul class="cc-menu" id="cc-menu" role="listbox"></ul>
+          </div>
           <input class="input" id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="11 2345 6789" required />
         </div>
       </div>

@@ -11,6 +11,7 @@ function render() {
       <figcaption>${g.caption[lang]}</figcaption>
     </figure>`).join("");
 
+  renderReviews($("#reviews"));
   $("#address").textContent = BUSINESS.address;
   $("#map-link").href = BUSINESS.maps;
   $("#phones").innerHTML =
@@ -24,7 +25,9 @@ function render() {
     .map((f) => `<details class="reveal"><summary>${f.q[lang]}</summary><p>${f.a[lang]}</p></details>`).join("");
 
   $("#wa-link").href = waLink(t("wa"));
-  $("#socials").innerHTML =
+  // Las redes van en el pie de página; acá no se repiten (SHOW_BODY_SOCIALS = false)
+  const SHOW_BODY_SOCIALS = false;
+  $("#socials").innerHTML = !SHOW_BODY_SOCIALS ? "" :
     (BUSINESS.instagram ? `<a href="${BUSINESS.instagram}" target="_blank" rel="noopener" aria-label="Instagram">${ICONS.instagram}</a>` : "") +
     (BUSINESS.facebook ? `<a href="${BUSINESS.facebook}" target="_blank" rel="noopener" aria-label="Facebook">${ICONS.facebook}</a>` : "");
   observeReveal();

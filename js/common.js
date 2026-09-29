@@ -110,6 +110,7 @@ function mountChrome(page, onLang = () => {}) {
     <nav class="top-nav" aria-label="Principal">
       ${link("menu", menuHref, "navMenu", "pizza")}
       ${link("about", "nosotros.html", "story", "book")}
+      ${link("contact", "contacto.html", "navContact", "pin")}
       ${link("book", "reservar.html", "book", "calendar")}
     </nav>
     <div class="top-status" id="top-status"></div>
@@ -119,16 +120,21 @@ function mountChrome(page, onLang = () => {}) {
   $("#bottom-nav").innerHTML = IS_SALON ? `
     ${link("menu", menuHref, "navMenu", "pizza")}
     ${link("about", "nosotros.html", "story", "book")}
-    <a href="#" class="bn-contact" data-contact><span class="nav-ico">${ICONS.pin}</span><span data-i18n="contact"></span></a>` : `
+    ${link("contact", "contacto.html", "navContact", "pin")}` : `
     ${link("menu", menuHref, "navMenu", "pizza")}
     ${link("about", "nosotros.html", "story", "book")}
+    ${link("contact", "contacto.html", "navContact", "pin")}
     ${link("book", "reservar.html", "book", "calendar")}
     <a class="bn-order" id="bn-order" target="_blank" rel="noopener"><span class="nav-ico">${ICONS.whatsapp}</span><span data-i18n="navOrder"></span></a>`;
+  $("#bottom-nav").classList.toggle("bn-5", !IS_SALON);
   if (IS_SALON) {
-    const book = $('.top-nav a[href="reservar.html"]');
-    if (book) book.outerHTML = `<a href="#" data-contact><span class="nav-ico">${ICONS.pin}</span><span data-i18n="contact"></span></a>`;
+    // En el salón no se reserva: Reservar no aparece en el menú de arriba
+    $('.top-nav a[href="reservar.html"]')?.remove();
     $$("[data-contact]").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); openContact(); }));
   }
+
+  // Redes sociales en el pie de todas las páginas
+  mountFooterSocial();
 
   if (page === "menu") {
     $$('#topbar a[href="#"], #bottom-nav a[href="#"]').forEach((a) =>
@@ -283,3 +289,85 @@ function openContact() {
   document.body.classList.add("contact-open");
 }
 function closeContact() { document.body.classList.remove("contact-open"); }
+
+
+// ===== Redes sociales (solo en el pie, para no repetir botones) =====
+function mountFooterSocial() {
+  const footer = $(".footer");
+  if (!footer || $(".footer-social", footer)) return;
+  const nets = [
+    ["instagram", BUSINESS.instagram, "Instagram"],
+    ["facebook", BUSINESS.facebook, "Facebook"],
+  ].filter((n) => n[1]);
+  if (!nets.length) return;
+  footer.insertAdjacentHTML("beforeend", `
+    <div class="footer-social">
+      ${nets.map(([ic, url, name]) => `<a href="${url}" target="_blank" rel="noopener" aria-label="${name}">${ICONS[ic]}</a>`).join("")}
+    </div>
+    <p class="footer-copy">© ${new Date().getFullYear()} Pizzería Los Campeones</p>`);
+}
+
+// ===== Reseñas de Google =====
+// Datos reales desde /api/reviews (función de Vercel). Si no hay clave o falla,
+// no se muestra nada inventado: solo los botones para ver y dejar reseñas.
+const _reviewsP = {};
+function loadReviews() {
+  if (_reviewsP[lang]) return _reviewsP[lang];
+  const KEY = "lc-reviews-" + lang;
+  try {
+    const c = JSON.parse(sessionStorage.getItem(KEY));
+    if (c && Date.now() - c.t < 3600e3) return (_reviewsP[lang] = Promise.resolve(c.d));
+  } catch (e) {}
+  _reviewsP[lang] = fetch("api/reviews?lang=" + lang)
+    .then((r) => (r.ok ? r.json() : null))
+    .then((d) => {
+      if (!d || !d.ok || !d.rating) return null;
+      try { sessionStorage.setItem(KEY, JSON.stringify({ t: Date.now(), d })); } catch (e) {}
+      return d;
+    })
+    .catch(() => null);
+  return _reviewsP[lang];
+}
+const fmtRating = (r) => new Intl.NumberFormat(LANGS.find((l) => l.id === lang).locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(r);
+const starsHTML = (r) => `<span class="stars" style="--r:${r}" aria-label="${fmtRating(r)} / 5">★★★★★</span>`;
+
+// Sello chico "★ 4,6 en Google · 1.234 reseñas"
+function reviewBadge(el, href) {
+  loadReviews().then((d) => {
+    if (!d) { el.hidden = true; return; }
+    el.hidden = false;
+    el.innerHTML = `<a class="g-badge" href="${href}">${ICONS.google}<b>${fmtRating(d.rating)}</b>${starsHTML(d.rating)}
+      <span>${new Intl.NumberFormat(LANGS.find((l) => l.id === lang).locale).format(d.total)} ${t("reviewsCount")} ${t("onGoogle")}</span><i>›</i></a>`;
+  });
+}
+
+// Sección completa de reseñas
+function renderReviews(el) {
+  const actions = `
+    <div class="rv-actions">
+      <a class="btn btn-gold" href="${BUSINESS.googleWriteReview}" target="_blank" rel="noopener">${ICONS.star}${t("leaveReview")}</a>
+      <a class="btn btn-outline-dark" href="${BUSINESS.googleReviews}" target="_blank" rel="noopener">${ICONS.google}${t("seeAllReviews")}</a>
+    </div>`;
+  el.innerHTML = `<p class="rv-fallback">${t("reviewsFallback")}</p>${actions}`;
+  loadReviews().then((d) => {
+    if (!d) return;
+    const loc = LANGS.find((l) => l.id === lang).locale;
+    el.innerHTML = `
+      <div class="rv-summary">
+        <span class="rv-score">${fmtRating(d.rating)}</span>
+        <div>${starsHTML(d.rating)}<small>${new Intl.NumberFormat(loc).format(d.total)} ${t("reviewsCount")} · ${ICONS.google} Google</small></div>
+      </div>
+      <div class="rv-list">
+        ${d.reviews.slice(0, 5).map((v) => `
+          <article class="rv-card">
+            <header>
+              ${v.photo ? `<img src="${v.photo}" alt="" loading="lazy" referrerpolicy="no-referrer" />` : `<span class="rv-avatar">${(v.author[0] || "?").toUpperCase()}</span>`}
+              <div><b>${v.authorUrl ? `<a href="${v.authorUrl}" target="_blank" rel="noopener">${v.author}</a>` : v.author}</b><small>${v.when}</small></div>
+            </header>
+            ${starsHTML(v.rating)}
+            <p>${v.text.replace(/</g, "&lt;")}</p>
+          </article>`).join("")}
+      </div>
+      ${actions}`;
+  });
+}
