@@ -8,7 +8,29 @@ const Cart = (() => {
   let mode = "pickup";
   try { items = JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { items = []; }
 
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(items)); } catch (e) {} };
+  // Pedido guardado de otra visita: se compara con la carta actual para que
+  // no quede un producto equivocado ni un precio viejo si cambió data.js.
+  const SIZES = [["p", "super", 0], ["p", "mediana", 1], ["m", "grande", 0], ["m", "chica", 1]];
+  function current(it) {
+    const [a, b, c] = String(it.key || "").split(":");
+    const pizza = PIZZAS.find((p) => p.id === a);
+    if (pizza) {
+      // clave de pizza: id:estilo:tamaño (el tamaño quedó escrito en el idioma de ese momento)
+      const s = SIZES.find(([st, k]) => st === b && Object.values(UI).some((u) => u[k] === c));
+      const price = s && pizza[s[0]][s[2]];
+      return price && pizza.available !== false ? { ...it, name: pizza.name, price } : null;
+    }
+    // clave de lista: categoría:posición → si se movió, se busca por nombre
+    const list = LIST_ITEMS[a]?.items;
+    if (!list) return null;
+    let i = +b;
+    if (list[i]?.name !== it.name) i = list.findIndex((x) => x.name === it.name);
+    const found = list[i];
+    return found && found.available !== false ? { ...it, key: `${a}:${i}`, price: found.price } : null;
+  }
+  items = items.filter((it) => it && it.qty > 0).map(current).filter(Boolean);
+
+  const save =() => { try { localStorage.setItem(KEY, JSON.stringify(items)); } catch (e) {} };
   const count = () => items.reduce((n, it) => n + it.qty, 0);
   const total = () => items.reduce((n, it) => n + it.qty * it.price, 0);
   const qtyOf = (key) => items.find((i) => i.key === key)?.qty || 0;

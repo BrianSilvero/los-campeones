@@ -152,12 +152,31 @@ $$(".input").forEach((i) => i.addEventListener("input", () => clearError(i.name)
 function clearError(f) { $(`.field[data-f="${f}"]`)?.classList.remove("error"); $("#form-error").textContent = ""; }
 
 // ----- Envío -----
-// TODO (admin): reemplazar por la llamada a Convex, por ejemplo:
+// Por ahora la reserva se manda por WhatsApp al local (como el pedido).
+// TODO (admin): cuando esté el panel, sumar la llamada a Convex, por ejemplo:
 //   await convex.mutation(api.reservations.create, data)
-// El panel de administración verá la reserva y la confirmará.
+// Mensaje con etiquetas fijas en español para que sea fácil de leer en el local.
+function reservationMessage(data) {
+  const date = new Date(data.date + "T12:00:00").toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" });
+  const shift = RESERVATIONS.shifts.find((s) => s.id === data.shift);
+  const lines = ["*RESERVA WEB · Pizzería Los Campeones*", ""];
+  lines.push(`Nombre: ${data.name}`);
+  lines.push(`Teléfono: ${data.phone}`);
+  lines.push(`Personas: ${data.people}`);
+  lines.push(`Fecha: ${date}`);
+  lines.push(`Horario: ${data.time} h${shift ? ` (${shift.name.es})` : ""}`);
+  lines.push(`Motivo: ${data.reason}`);
+  if (data.notes) lines.push(`Comentarios: ${data.notes}`);
+  return lines.join("\n");
+}
+
+// Se abre WhatsApp antes de cualquier "await" para que el navegador no lo bloquee.
 async function submitReservation(data) {
-  console.info("Reserva (muestra, no se envía):", data);
-  return { ok: true, id: "DEMO-" + Date.now() };
+  const link = waLink(reservationMessage(data));
+  const win = window.open(link, "_blank");
+  if (win) win.opener = null;
+  else location.href = link; // si el navegador bloqueó la ventana nueva
+  return { ok: true };
 }
 
 $("#res-form").addEventListener("submit", async (e) => {

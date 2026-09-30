@@ -310,6 +310,8 @@ function mountFooterSocial() {
 // ===== Reseñas de Google =====
 // Datos reales desde /api/reviews (función de Vercel). Si no hay clave o falla,
 // no se muestra nada inventado: solo los botones para ver y dejar reseñas.
+const escapeHTML = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const safeURL = (u) => (/^https:\/\//i.test(u || "") ? escapeHTML(u) : "");
 const _reviewsP = {};
 function loadReviews() {
   if (_reviewsP[lang]) return _reviewsP[lang];
@@ -358,15 +360,18 @@ function renderReviews(el) {
         <div>${starsHTML(d.rating)}<small>${new Intl.NumberFormat(loc).format(d.total)} ${t("reviewsCount")} · ${ICONS.google} Google</small></div>
       </div>
       <div class="rv-list">
-        ${d.reviews.slice(0, 5).map((v) => `
+        ${d.reviews.slice(0, 5).map((v) => {
+          const author = escapeHTML(v.author), photo = safeURL(v.photo), url = safeURL(v.authorUrl);
+          return `
           <article class="rv-card">
             <header>
-              ${v.photo ? `<img src="${v.photo}" alt="" loading="lazy" referrerpolicy="no-referrer" />` : `<span class="rv-avatar">${(v.author[0] || "?").toUpperCase()}</span>`}
-              <div><b>${v.authorUrl ? `<a href="${v.authorUrl}" target="_blank" rel="noopener">${v.author}</a>` : v.author}</b><small>${v.when}</small></div>
+              ${photo ? `<img src="${photo}" alt="" loading="lazy" referrerpolicy="no-referrer" />` : `<span class="rv-avatar">${escapeHTML((String(v.author || "")[0] || "?").toUpperCase())}</span>`}
+              <div><b>${url ? `<a href="${url}" target="_blank" rel="noopener">${author}</a>` : author}</b><small>${escapeHTML(v.when)}</small></div>
             </header>
-            ${starsHTML(v.rating)}
-            <p>${v.text.replace(/</g, "&lt;")}</p>
-          </article>`).join("")}
+            ${starsHTML(+v.rating || 0)}
+            <p>${escapeHTML(v.text)}</p>
+          </article>`;
+        }).join("")}
       </div>
       ${actions}`;
   });

@@ -5,8 +5,9 @@ const FILL_MS = 1150;     // la copa se llena
 
 // ---------------- Pantalla 0 → 1 ----------------
 function startFlow() {
-  // Volviendo desde otra página: directo a la carta
-  if (location.hash && location.hash !== "#") {
+  // Volviendo desde otra página, o ya eligió idioma antes: directo a la carta
+  // (la intro completa se ve sólo la primera vez; el idioma se cambia desde la cabecera)
+  if ((location.hash && location.hash !== "#") || getLang()) {
     ["#gate", "#splash", "#lang-screen"].forEach((s) => $(s)?.remove());
     showApp(false);
     return;
