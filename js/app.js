@@ -128,8 +128,8 @@ const tagMini = (tag) => `<i class="mini mini-${tag}" title="${t("tag." + tag)}"
 const tagChip = (tag) => `<span class="tag tag-${tag}"><i>${ICONS[TAG_ICON[tag]]}</i>${t("tag." + tag)}</span>`;
 
 // Foto opcional: el hueco sólo aparece cuando la foto existe
-const thumb = (src, alt) =>
-  `<span class="thumb"><img src="${src}" alt="${alt}" loading="lazy" onload="this.parentNode.classList.add('has')" onerror="this.parentNode.remove()" /></span>`;
+const thumb = (src, alt) => MISSING_IMG.has(src) ? "" :
+  `<span class="thumb"><img src="${src}" alt="${alt}" loading="lazy" onload="this.parentNode.classList.add('has')" onerror="markMissing(this);this.parentNode.remove()" /></span>`;
 
 // ---------------- Render ----------------
 function renderTabs() {
@@ -431,6 +431,28 @@ $("#subcats").addEventListener("click", (e) => {
   if (b) selectCat(b.dataset.cat);
 });
 $("#next-cat").addEventListener("click", (e) => selectCat(e.currentTarget.dataset.cat));
+
+// ---------------- Clásicas / Especiales fijas (celular y tablet) ----------------
+// Quedan pegadas debajo de la barra de categorías para que nunca se escondan
+// detrás de ella al subir. La franja crema de atrás aparece sólo cuando están fijas.
+function mountStickySubcats() {
+  const sub = $("#subcats"), cats = $("#cats");
+  let top = 0, ticking = false;
+  const setTop = () => {
+    top = innerWidth < 1024 ? (parseFloat(getComputedStyle(cats).top) || 0) + cats.offsetHeight : 0;
+    document.documentElement.style.setProperty("--sub-top", top + "px");
+  };
+  const check = () => {
+    ticking = false;
+    sub.classList.toggle("stuck", innerWidth < 1024 && scrollY > 0 && sub.getBoundingClientRect().top <= top + 1);
+  };
+  const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(check); } };
+  addEventListener("scroll", onScroll, { passive: true });
+  addEventListener("resize", () => { setTop(); onScroll(); });
+  if (window.ResizeObserver) new ResizeObserver(() => { setTop(); onScroll(); }).observe(cats);
+  setTop();
+}
+mountStickySubcats();
 
 // La carta se dibuja apenas carga la página (Google también la lee);
 // la carga y los idiomas quedan por encima.

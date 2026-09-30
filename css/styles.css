@@ -1713,3 +1713,43 @@ body.contact-open .contact-sheet { transform: translate(-50%, 0); }
 .cart-close::after, .sheet-close::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; }
 .footer-social a { position: relative; }
 .footer-social a::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; }
+
+/* =====================================================================
+   v18 · RENDIMIENTO Y CLÁSICAS/ESPECIALES FIJAS (sin cambios de estética)
+   ===================================================================== */
+/* Fondos oscuros de ficha / pedido / contacto: el desenfoque sólo mientras
+   están abiertos (antes se calculaba siempre, aun invisibles). Al cerrar se
+   mantiene hasta que termina el fundido. */
+.sheet-bg, .cart-bg, .catsheet-bg {
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  transition: opacity .3s, backdrop-filter 0s .3s, -webkit-backdrop-filter 0s .3s;
+}
+body.sheet-open .sheet-bg, body.cart-open .cart-bg, body.contact-open #contact-bg, body.cats-open .catsheet-bg {
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); transition: opacity .3s;
+}
+
+/* Respuesta inmediata al tocar (sin espera de doble toque) */
+a, button, label, input, .row, [role="switch"] { touch-action: manipulation; }
+
+/* Celular y tablet: Clásicas / Especiales quedan fijas debajo de las
+   categorías, así nunca se esconden detrás de la barra al subir. */
+@media (max-width: 1023px) {
+  .subcats { position: sticky; top: var(--sub-top, 140px); z-index: 30; background: transparent; border-color: transparent; box-shadow: none; }
+  /* la píldora blanca de siempre */
+  .subcats::after {
+    content: ""; position: absolute; inset: -1px; z-index: -1; border-radius: inherit;
+    background: var(--white); border: 1px solid rgba(164,130,63,.25); box-shadow: 0 4px 14px rgba(60,45,20,.06);
+  }
+  /* franja crema detrás, sólo cuando está fija, para que la lista no se vea alrededor */
+  .subcats::before {
+    content: ""; position: absolute; inset: -10px -16px -10px; z-index: -2;
+    background: var(--cream); opacity: 0; transition: opacity .2s;
+  }
+  .subcats.stuck::before { opacity: 1; }
+}
+@media (max-width: 380px) { .subcats::before { inset: -10px -12px -10px; } }
+
+/* Miniaturas de la carta: con display:none el navegador nunca cargaba la foto
+   (carga diferida), así que no aparecían aunque existieran. Mientras no cargó
+   queda invisible y sin ocupar lugar; al cargar se muestra como siempre. */
+.thumb:not(.has) { display: block; position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
