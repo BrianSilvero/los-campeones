@@ -432,27 +432,37 @@ $("#subcats").addEventListener("click", (e) => {
 });
 $("#next-cat").addEventListener("click", (e) => selectCat(e.currentTarget.dataset.cat));
 
-// ---------------- Clásicas / Especiales fijas (celular y tablet) ----------------
-// Quedan pegadas debajo de la barra de categorías para que nunca se escondan
-// detrás de ella al subir. La franja crema de atrás aparece sólo cuando están fijas.
-function mountStickySubcats() {
-  const sub = $("#subcats"), cats = $("#cats");
-  let top = 0, ticking = false;
-  const setTop = () => {
-    top = innerWidth < 1024 ? (parseFloat(getComputedStyle(cats).top) || 0) + cats.offsetHeight : 0;
-    document.documentElement.style.setProperty("--sub-top", top + "px");
+// ---------------- Al subir, la carta termina de subir sola ----------------
+// Si al volver hacia arriba el scroll se frena justo donde Clásicas/Especiales
+// y el interruptor quedan debajo de las barras fijas, termina de subir suave
+// hasta mostrarlos enteros. Sólo al subir, y sólo en esa franja del principio.
+(function settleAtTop() {
+  let lastY = scrollY, goingUp = false, touching = false, timer = 0;
+  // Hasta dónde llega la franja: hasta donde empieza la lista (con un margen chico),
+  // o sea mientras estás viendo el principio de la carta con los controles tapados
+  const zone = () => {
+    const rows = $("#rows");
+    if (!rows || !rows.offsetParent) return 0;
+    const bars = $(".topbar").offsetHeight + (innerWidth < 1024 ? $("#cats").offsetHeight : 0);
+    return rows.getBoundingClientRect().top + scrollY - bars + 40;
   };
-  const check = () => {
-    ticking = false;
-    sub.classList.toggle("stuck", innerWidth < 1024 && scrollY > 0 && sub.getBoundingClientRect().top <= top + 1);
+  const settle = () => {
+    if (touching || !goingUp || document.body.classList.contains("locked")) return;
+    const y = scrollY;
+    if (y > 0 && y < zone()) scrollTo({ top: 0, behavior: "smooth" });
   };
-  const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(check); } };
-  addEventListener("scroll", onScroll, { passive: true });
-  addEventListener("resize", () => { setTop(); onScroll(); });
-  if (window.ResizeObserver) new ResizeObserver(() => { setTop(); onScroll(); }).observe(cats);
-  setTop();
-}
-mountStickySubcats();
+  const later = () => { clearTimeout(timer); timer = setTimeout(settle, 140); };
+  addEventListener("scroll", () => {
+    const y = scrollY;
+    if (y !== lastY) goingUp = y < lastY;
+    lastY = y;
+    later();
+  }, { passive: true });
+  // Mientras el dedo está apoyado no se hace nada; al soltar, se espera a que frene
+  addEventListener("touchstart", () => { touching = true; clearTimeout(timer); }, { passive: true });
+  addEventListener("touchend", () => { touching = false; later(); }, { passive: true });
+  addEventListener("touchcancel", () => { touching = false; later(); }, { passive: true });
+})();
 
 // La carta se dibuja apenas carga la página (Google también la lee);
 // la carga y los idiomas quedan por encima.
