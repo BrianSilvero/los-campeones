@@ -233,7 +233,8 @@ function renderPanel(dir = 0) {
 
   $("#panel-icon").innerHTML = ICONS[cat.icon];
   $("#panel-title").textContent = cat.name[lang];
-  $("#panel-note").textContent = list?.note ? list.note[lang] : `${count} ${t("items")}`;
+  // En inglés y portugués se aclara la moneda para que un turista no lea dólares
+  $("#panel-note").textContent = (list?.note ? list.note[lang] : `${count} ${t("items")}`) + (lang !== "es" ? ` · ${t("pricesARS")}` : "");
   renderStyleToggle(cat);
   renderRows(cat);
   $("#tap-hint").hidden = cat.type !== "pizza";

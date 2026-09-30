@@ -91,12 +91,14 @@ function renderTimes() {
   const isToday = state.date === todayBA();
   const nowMin = hour * 60 + minute + 60; // mínimo 1 h de anticipación
   const slots = slotsFor(state.shift);
+  // Sin turno elegido: se explica qué hacer. Hoy sin horarios libres: se avisa.
+  const allPast = isToday && slots.length > 0 && slots.every((s) => toMin(s) < nowMin);
   $("#times").innerHTML = slots.length
     ? slots.map((s) => {
         const past = isToday && toMin(s) < nowMin;
         return `<button type="button" class="chip ${state.time === s ? "on" : ""}" data-time="${s}" ${past ? "disabled" : ""}>${s}</button>`;
-      }).join("")
-    : `<p class="hint">—</p>`;
+      }).join("") + (allPast ? `<p class="hint">${t("resNoSlots")}</p>` : "")
+    : `<p class="hint">${t("resPickShift")}</p>`;
 }
 
 function renderReasons() {

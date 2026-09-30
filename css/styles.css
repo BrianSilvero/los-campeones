@@ -1143,42 +1143,11 @@ body.cats-open .catbtn:nth-child(8) { animation-delay: .21s; }
 .lang-screen.landed .lang-title { animation-delay: .44s; }
 .lang-screen.landed .lang-opt { animation-delay: calc(.5s + var(--i) * .07s); }
 
-/* ---- Idiomas → carta: puertas con fileteado ---- */
-.doors { position: fixed; inset: 0; z-index: 95; pointer-events: none; visibility: hidden; }
-.doors.closing, .doors.closed, .doors.opening { visibility: visible; pointer-events: auto; }
-.door {
-  position: absolute; top: 0; bottom: 0; width: 50.5%; overflow: hidden;
-  background: radial-gradient(circle at 50% 45%, #2b2117 0%, var(--black) 75%);
-  transition: transform .4s cubic-bezier(.6,0,.3,1);
-}
-.door-l { left: 0; transform: translateX(-102%); border-right: 1px solid rgba(201,168,106,.6); }
-.door-r { right: 0; transform: translateX(102%); border-left: 1px solid rgba(201,168,106,.6); }
-.doors.closing .door, .doors.closed .door { transform: none; }
-.doors.opening .door { transition-duration: .65s; transition-timing-function: cubic-bezier(.5,0,.2,1); }
-.doors.opening .door-l { transform: translateX(-102%); }
-.doors.opening .door-r { transform: translateX(102%); }
+/* ---- Marco y fileteado de las puertas (los usa .gate) ---- */
 .door-frame { position: absolute; inset: 18px 14px; border: 1.5px solid rgba(201,168,106,.45); border-radius: 14px; }
 .door-frame::after { content: ""; position: absolute; inset: 8px; border: 1px solid rgba(201,168,106,.25); border-radius: 10px; }
-.door-l .door-frame { right: 10px; }
-.door-r .door-frame { left: 10px; }
 .door-filete { position: absolute; left: 50%; width: 70%; color: var(--gold); opacity: .45; transform: translateX(-50%); }
 .door-filete { top: 16%; }
-.door::after { /* manija */
-  content: ""; position: absolute; top: 50%; width: 5px; height: 64px; margin-top: -32px; border-radius: 3px;
-  background: var(--gold-grad); box-shadow: 0 0 12px rgba(201,168,106,.5);
-}
-.door-l::after { right: 18px; }
-.door-r::after { left: 18px; }
-.doors-logo {
-  position: fixed; left: 50%; top: 50%; width: min(320px, 72vw); z-index: 2;
-  transform: translate(-50%, -50%) scale(.8); opacity: 0;
-  filter: drop-shadow(0 0 18px rgba(201,168,106,.35));
-  transition: opacity .3s .15s, transform .45s .15s var(--ease);
-}
-.doors.closing .doors-logo, .doors.closed .doors-logo, .doors.opening .doors-logo { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-.doors.opening .doors-logo { transition: none; filter: none; }
-body.doors-run .top-logo img { opacity: 0; }
-body.doors-run .ember-bg { opacity: 0; }
 
 /* ---- Letra un poco más grande en celulares ---- */
 @media (max-width: 480px) {
@@ -1714,3 +1683,33 @@ body.contact-open .contact-sheet { transform: translate(-50%, 0); }
 }
 @media (prefers-reduced-motion: reduce) { .splash .shine-img { display: none; } }
 .splash .shine-logo img.shine-img { filter: brightness(2) saturate(1.5) drop-shadow(0 0 5px rgba(255, 214, 130, .85)); }
+
+/* =====================================================================
+   v17 · AJUSTES DE REVISIÓN (sin cambios de estética)
+   ===================================================================== */
+/* Pestañas del celular: íconos y primer renglón alineados aunque un nombre
+   ocupe dos líneas ("Bebidas y postres") */
+@media (max-width: 1023px) {
+  .cats-track > .cat, .cats-track > :first-child, .cats-track > :last-child { justify-content: flex-start; padding-top: 9px; }
+}
+
+/* Reservas: el aviso de horarios ocupa todo el ancho de la grilla */
+.times .hint { grid-column: 1 / -1; margin-top: 0; }
+
+/* WhatsApp flotante en computadora: donde el botón completo taparía la carta
+   queda como círculo, y se despliega al pasar el mouse */
+@media (min-width: 900px) and (max-width: 1699px) {
+  .wa-float { padding: 0 15px; gap: 0; }
+  .wa-label { max-width: 0; opacity: 0; }
+}
+@media (min-width: 900px) and (hover: hover) {
+  body.page-menu .wa-float:hover, body.page-menu .wa-float:focus-visible { padding: 0 20px 0 16px; gap: 8px; }
+  body.page-menu .wa-float:hover .wa-label, body.page-menu .wa-float:focus-visible .wa-label { max-width: 200px; opacity: 1; }
+}
+
+/* Áreas de toque de al menos 44 px sin cambiar cómo se ven los botones */
+.switch::after { content: ""; position: absolute; inset: -6px -4px; }
+.cart-close { position: relative; }
+.cart-close::after, .sheet-close::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; }
+.footer-social a { position: relative; }
+.footer-social a::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; }
