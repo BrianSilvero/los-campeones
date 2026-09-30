@@ -436,8 +436,12 @@ $("#next-cat").addEventListener("click", (e) => selectCat(e.currentTarget.datase
 // Si al volver hacia arriba el scroll se frena justo donde Clásicas/Especiales
 // y el interruptor quedan debajo de las barras fijas, termina de subir suave
 // hasta mostrarlos enteros. Sólo al subir, y sólo en esa franja del principio.
+// En el celular se mira hacia dónde movió el dedo la persona (no hacia dónde se
+// movió la página): Chrome en iPhone, al cerrar su panel "Volver a cargar", empuja
+// la página hacia abajo y la deja con los controles tapados.
 (function settleAtTop() {
-  let lastY = scrollY, goingUp = false, touching = false, timer = 0;
+  let lastY = scrollY, scrollUp = false, timer = 0;
+  let usingTouch = false, touching = false, startY = 0, moveY = 0, fingerUp = false, fixes = 0;
   // Hasta dónde llega la franja: hasta donde empieza la lista (con un margen chico),
   // o sea mientras estás viendo el principio de la carta con los controles tapados
   const zone = () => {
@@ -447,21 +451,34 @@ $("#next-cat").addEventListener("click", (e) => selectCat(e.currentTarget.datase
     return rows.getBoundingClientRect().top + scrollY - bars + 40;
   };
   const settle = () => {
-    if (touching || !goingUp || document.body.classList.contains("locked")) return;
+    const up = usingTouch ? fingerUp : scrollUp;
+    if (touching || !up || document.body.classList.contains("locked")) return;
     const y = scrollY;
-    if (y > 0 && y < zone()) scrollTo({ top: 0, behavior: "smooth" });
+    // como mucho dos correcciones por gesto, por si el navegador vuelve a empujar
+    if (y > 0 && y < zone() && fixes < 2) { fixes++; scrollTo({ top: 0, behavior: "smooth" }); }
   };
   const later = () => { clearTimeout(timer); timer = setTimeout(settle, 140); };
   addEventListener("scroll", () => {
     const y = scrollY;
-    if (y !== lastY) goingUp = y < lastY;
+    if (y !== lastY) scrollUp = y < lastY;
     lastY = y;
     later();
   }, { passive: true });
+  addEventListener("wheel", () => { usingTouch = false; fixes = 0; }, { passive: true });
   // Mientras el dedo está apoyado no se hace nada; al soltar, se espera a que frene
-  addEventListener("touchstart", () => { touching = true; clearTimeout(timer); }, { passive: true });
-  addEventListener("touchend", () => { touching = false; later(); }, { passive: true });
-  addEventListener("touchcancel", () => { touching = false; later(); }, { passive: true });
+  addEventListener("touchstart", (e) => {
+    usingTouch = true; touching = true; fixes = 0; clearTimeout(timer);
+    startY = moveY = e.touches[0]?.clientY ?? 0;
+  }, { passive: true });
+  addEventListener("touchmove", (e) => { moveY = e.touches[0]?.clientY ?? moveY; }, { passive: true });
+  const end = () => {
+    touching = false;
+    if (Math.abs(moveY - startY) < 8) return; // fue un toque, no un deslizamiento
+    fingerUp = moveY > startY; // dedo hacia abajo = la página sube
+    later();
+  };
+  addEventListener("touchend", end, { passive: true });
+  addEventListener("touchcancel", end, { passive: true });
 })();
 
 // La carta se dibuja apenas carga la página (Google también la lee);
