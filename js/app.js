@@ -5,13 +5,23 @@ const FILL_MS = 1150;     // la copa se llena
 
 // ---------------- Pantalla 0 → 1 ----------------
 function startFlow() {
-  // Volviendo desde otra página, o ya eligió idioma antes: directo a la carta
-  // (la intro completa se ve sólo la primera vez; el idioma se cambia desde la cabecera)
-  if ((location.hash && location.hash !== "#") || getLang()) {
+  // Volviendo desde otra página, o la intro ya se vio en esta pestaña: directo a la carta.
+  // Las puertas se ven cada vez que se abre la página de nuevo (al cerrar la pestaña
+  // se borra sessionStorage); los idiomas sólo la primera vez (queda guardado).
+  let introSeen = false;
+  try { introSeen = sessionStorage.getItem("lc-intro") === "1"; sessionStorage.setItem("lc-intro", "1"); } catch (e) {}
+  if ((location.hash && location.hash !== "#") || introSeen) {
     ["#gate", "#splash", "#lang-screen"].forEach((s) => $(s)?.remove());
     showApp(false);
     return;
   }
+  const hasLang = !!getLang();
+  // Después de las puertas: la primera vez se elige idioma; después, directo a la carta
+  const afterIntro = () => {
+    if (!hasLang) return showLangScreen();
+    $("#lang-screen")?.remove();
+    showApp(true);
+  };
   document.body.classList.add("intro");
   applyTexts($("#gate"));
   applyTexts($("#lang-screen"));
@@ -24,7 +34,7 @@ function startFlow() {
   const T = [];
   T.push(setTimeout(() => gate.classList.replace("shut", "open"), 150));
   T.push(setTimeout(() => gate.classList.replace("open", "shut"), 2100));
-  T.push(setTimeout(() => { $("#splash")?.remove(); showLangScreen(); }, 2550));
+  T.push(setTimeout(() => { $("#splash")?.remove(); afterIntro(); }, 2550));
   T.push(setTimeout(() => gate.classList.replace("shut", "open"), 2650));
   T.push(setTimeout(() => gate.remove(), 3300));
   // tocar la pantalla saltea la intro
@@ -32,7 +42,7 @@ function startFlow() {
     T.forEach(clearTimeout);
     gate.remove();
     $("#splash")?.remove();
-    showLangScreen();
+    afterIntro();
   };
   gate.addEventListener("click", skip, { once: true });
   $("#splash").addEventListener("click", skip, { once: true });
