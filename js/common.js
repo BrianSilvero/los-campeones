@@ -155,11 +155,16 @@ function mountChrome(page, onLang = () => {}) {
   return () => { redrawPicker(); refresh(); };
 }
 
+// Fotos que todavía no existen: se recuerdan durante la visita para no volver a
+// pedirlas cada vez que se redibuja la carta (cuando se suben, cargan solas).
+const MISSING_IMG = new Set();
+function markMissing(img) { MISSING_IMG.add(img.getAttribute("src")); }
+
 // Foto con respaldo: si todavía no existe, queda un recuadro elegante
 function imgOrPlaceholder(src, alt, cls = "", icon = "pizza") {
   return `<div class="ph ${cls}">
     <span class="ph-icon">${ICONS[icon] || ICONS.pizza}</span>
-    ${src ? `<img src="${src}" alt="${alt}" loading="lazy" onerror="this.remove()" />` : ""}
+    ${src && !MISSING_IMG.has(src) ? `<img src="${src}" alt="${alt}" loading="lazy" onerror="markMissing(this);this.remove()" />` : ""}
   </div>`;
 }
 
@@ -201,7 +206,8 @@ function mountEmbers(canvas) {
   if (!canvas || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const soft = canvas.dataset.embers === "soft";
   const ctx = canvas.getContext("2d");
-  const dpr = Math.min(devicePixelRatio || 1, 2);
+  // Fondo suave: son brillos difuminados, a resolución normal no se nota y es 4 veces más liviano
+  const dpr = soft ? 1 : Math.min(devicePixelRatio || 1, 2);
   let w = 0, h = 0, parts = [], running = true;
 
   const count = () => {
@@ -217,13 +223,38 @@ function mountEmbers(canvas) {
     phase: Math.random() * Math.PI * 2,
     life: 0,
     max: (soft ? 900 : 520) + Math.random() * 500,
-    hue: 22 + Math.random() * 20,
+    hue: 22 + Math.round(Math.random() * 20),
   });
+  // El brillo de cada brasa se dibuja una sola vez por tono y se reutiliza
+  // (antes se creaba un degradado nuevo por brasa en cada cuadro).
+  function sprite(hue) {
+    const S = 64, c = document.createElement("canvas");
+    c.width = c.height = S;
+    const g2 = c.getContext("2d"), m = S / 2;
+    const g = g2.createRadialGradient(m, m, 0, m, m, m);
+    g.addColorStop(0, `hsla(${hue + 15}, 100%, 70%, 1)`);
+    g.addColorStop(0.35, `hsla(${hue}, 100%, 55%, 0.6)`);
+    g.addColorStop(1, `hsla(${hue}, 100%, 50%, 0)`);
+    g2.fillStyle = g;
+    g2.beginPath(); g2.arc(m, m, m, 0, Math.PI * 2); g2.fill();
+    return c;
+  }
+  const sprites = {};
+  const spriteOf = (hue) => (sprites[hue] ??= sprite(hue));
   function resize() {
-    w = canvas.clientWidth; h = canvas.clientHeight;
+    const nw = canvas.clientWidth, nh = canvas.clientHeight;
+    if (nw === w && nh === h) return;
+    const first = !parts.length, oldCount = parts.length;
+    w = nw; h = nh;
     canvas.width = w * dpr; canvas.height = h * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    parts = Array.from({ length: count() }, () => spawn(false));
+    // En el celular la barra del navegador cambia el alto al hacer scroll:
+    // se conservan las brasas y sólo se ajusta la cantidad si cambió el ancho.
+    const n = count();
+    if (first) parts = Array.from({ length: n }, () => spawn(false));
+    else if (n > oldCount) parts.push(...Array.from({ length: n - oldCount }, () => spawn(false)));
+    else if (n < oldCount) parts.length = n;
+    parts.forEach((p) => { if (p.x > w) p.x = Math.random() * w; });
   }
   function frame() {
     if (!running) return;
@@ -237,13 +268,12 @@ function mountEmbers(canvas) {
       const flicker = 0.65 + 0.35 * Math.sin(p.life / 6 + p.phase);
       const a = fade * flicker * (soft ? 0.45 : 0.9);
       if (p.y < -10 || p.life > p.max) Object.assign(p, spawn(true));
-      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 4);
-      g.addColorStop(0, `hsla(${p.hue + 15}, 100%, 70%, ${a})`);
-      g.addColorStop(0.35, `hsla(${p.hue}, 100%, 55%, ${a * 0.6})`);
-      g.addColorStop(1, `hsla(${p.hue}, 100%, 50%, 0)`);
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 4, 0, Math.PI * 2); ctx.fill();
+      if (a <= 0.003) continue;
+      const R = p.r * 4;
+      ctx.globalAlpha = a;
+      ctx.drawImage(spriteOf(p.hue), p.x - R, p.y - R, R * 2, R * 2);
     }
+    ctx.globalAlpha = 1;
     requestAnimationFrame(frame);
   }
   resize();
@@ -310,6 +340,8 @@ function mountFooterSocial() {
 // ===== Reseñas de Google =====
 // Datos reales desde /api/reviews (función de Vercel). Si no hay clave o falla,
 // no se muestra nada inventado: solo los botones para ver y dejar reseñas.
+const escapeHTML = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const safeURL = (u) => (/^https:\/\//i.test(u || "") ? escapeHTML(u) : "");
 const _reviewsP = {};
 function loadReviews() {
   if (_reviewsP[lang]) return _reviewsP[lang];
@@ -358,15 +390,18 @@ function renderReviews(el) {
         <div>${starsHTML(d.rating)}<small>${new Intl.NumberFormat(loc).format(d.total)} ${t("reviewsCount")} · ${ICONS.google} Google</small></div>
       </div>
       <div class="rv-list">
-        ${d.reviews.slice(0, 5).map((v) => `
+        ${d.reviews.slice(0, 5).map((v) => {
+          const author = escapeHTML(v.author), photo = safeURL(v.photo), url = safeURL(v.authorUrl);
+          return `
           <article class="rv-card">
             <header>
-              ${v.photo ? `<img src="${v.photo}" alt="" loading="lazy" referrerpolicy="no-referrer" />` : `<span class="rv-avatar">${(v.author[0] || "?").toUpperCase()}</span>`}
-              <div><b>${v.authorUrl ? `<a href="${v.authorUrl}" target="_blank" rel="noopener">${v.author}</a>` : v.author}</b><small>${v.when}</small></div>
+              ${photo ? `<img src="${photo}" alt="" loading="lazy" referrerpolicy="no-referrer" />` : `<span class="rv-avatar">${escapeHTML((String(v.author || "")[0] || "?").toUpperCase())}</span>`}
+              <div><b>${url ? `<a href="${url}" target="_blank" rel="noopener">${author}</a>` : author}</b><small>${escapeHTML(v.when)}</small></div>
             </header>
-            ${starsHTML(v.rating)}
-            <p>${v.text.replace(/</g, "&lt;")}</p>
-          </article>`).join("")}
+            ${starsHTML(+v.rating || 0)}
+            <p>${escapeHTML(v.text)}</p>
+          </article>`;
+        }).join("")}
       </div>
       ${actions}`;
   });

@@ -5,12 +5,23 @@ const FILL_MS = 1150;     // la copa se llena
 
 // ---------------- Pantalla 0 → 1 ----------------
 function startFlow() {
-  // Volviendo desde otra página: directo a la carta
-  if (location.hash && location.hash !== "#") {
+  // Volviendo desde otra página, o la intro ya se vio en esta pestaña: directo a la carta.
+  // Las puertas se ven cada vez que se abre la página de nuevo (al cerrar la pestaña
+  // se borra sessionStorage); los idiomas sólo la primera vez (queda guardado).
+  let introSeen = false;
+  try { introSeen = sessionStorage.getItem("lc-intro") === "1"; sessionStorage.setItem("lc-intro", "1"); } catch (e) {}
+  if ((location.hash && location.hash !== "#") || introSeen) {
     ["#gate", "#splash", "#lang-screen"].forEach((s) => $(s)?.remove());
     showApp(false);
     return;
   }
+  const hasLang = !!getLang();
+  // Después de las puertas: la primera vez se elige idioma; después, directo a la carta
+  const afterIntro = () => {
+    if (!hasLang) return showLangScreen();
+    $("#lang-screen")?.remove();
+    showApp(true);
+  };
   document.body.classList.add("intro");
   applyTexts($("#gate"));
   applyTexts($("#lang-screen"));
@@ -23,7 +34,7 @@ function startFlow() {
   const T = [];
   T.push(setTimeout(() => gate.classList.replace("shut", "open"), 150));
   T.push(setTimeout(() => gate.classList.replace("open", "shut"), 2100));
-  T.push(setTimeout(() => { $("#splash")?.remove(); showLangScreen(); }, 2550));
+  T.push(setTimeout(() => { $("#splash")?.remove(); afterIntro(); }, 2550));
   T.push(setTimeout(() => gate.classList.replace("shut", "open"), 2650));
   T.push(setTimeout(() => gate.remove(), 3300));
   // tocar la pantalla saltea la intro
@@ -31,7 +42,7 @@ function startFlow() {
     T.forEach(clearTimeout);
     gate.remove();
     $("#splash")?.remove();
-    showLangScreen();
+    afterIntro();
   };
   gate.addEventListener("click", skip, { once: true });
   $("#splash").addEventListener("click", skip, { once: true });
@@ -117,8 +128,8 @@ const tagMini = (tag) => `<i class="mini mini-${tag}" title="${t("tag." + tag)}"
 const tagChip = (tag) => `<span class="tag tag-${tag}"><i>${ICONS[TAG_ICON[tag]]}</i>${t("tag." + tag)}</span>`;
 
 // Foto opcional: el hueco sólo aparece cuando la foto existe
-const thumb = (src, alt) =>
-  `<span class="thumb"><img src="${src}" alt="${alt}" loading="lazy" onload="this.parentNode.classList.add('has')" onerror="this.parentNode.remove()" /></span>`;
+const thumb = (src, alt) => MISSING_IMG.has(src) ? "" :
+  `<span class="thumb"><img src="${src}" alt="${alt}" loading="lazy" onload="this.parentNode.classList.add('has')" onerror="markMissing(this);this.parentNode.remove()" /></span>`;
 
 // ---------------- Render ----------------
 function renderTabs() {
@@ -222,7 +233,8 @@ function renderPanel(dir = 0) {
 
   $("#panel-icon").innerHTML = ICONS[cat.icon];
   $("#panel-title").textContent = cat.name[lang];
-  $("#panel-note").textContent = list?.note ? list.note[lang] : `${count} ${t("items")}`;
+  // En inglés y portugués se aclara la moneda para que un turista no lea dólares
+  $("#panel-note").textContent = (list?.note ? list.note[lang] : `${count} ${t("items")}`) + (lang !== "es" ? ` · ${t("pricesARS")}` : "");
   renderStyleToggle(cat);
   renderRows(cat);
   $("#tap-hint").hidden = cat.type !== "pizza";
@@ -419,6 +431,55 @@ $("#subcats").addEventListener("click", (e) => {
   if (b) selectCat(b.dataset.cat);
 });
 $("#next-cat").addEventListener("click", (e) => selectCat(e.currentTarget.dataset.cat));
+
+// ---------------- Al subir, la carta termina de subir sola ----------------
+// Si al volver hacia arriba el scroll se frena justo donde Clásicas/Especiales
+// y el interruptor quedan debajo de las barras fijas, termina de subir suave
+// hasta mostrarlos enteros. Sólo al subir, y sólo en esa franja del principio.
+// En el celular se mira hacia dónde movió el dedo la persona (no hacia dónde se
+// movió la página): Chrome en iPhone, al cerrar su panel "Volver a cargar", empuja
+// la página hacia abajo y la deja con los controles tapados.
+(function settleAtTop() {
+  let lastY = scrollY, scrollUp = false, timer = 0;
+  let usingTouch = false, touching = false, startY = 0, moveY = 0, fingerUp = false, fixes = 0;
+  // Hasta dónde llega la franja: hasta donde empieza la lista (con un margen chico),
+  // o sea mientras estás viendo el principio de la carta con los controles tapados
+  const zone = () => {
+    const rows = $("#rows");
+    if (!rows || !rows.offsetParent) return 0;
+    const bars = $(".topbar").offsetHeight + (innerWidth < 1024 ? $("#cats").offsetHeight : 0);
+    return rows.getBoundingClientRect().top + scrollY - bars + 40;
+  };
+  const settle = () => {
+    const up = usingTouch ? fingerUp : scrollUp;
+    if (touching || !up || document.body.classList.contains("locked")) return;
+    const y = scrollY;
+    // como mucho dos correcciones por gesto, por si el navegador vuelve a empujar
+    if (y > 0 && y < zone() && fixes < 2) { fixes++; scrollTo({ top: 0, behavior: "smooth" }); }
+  };
+  const later = () => { clearTimeout(timer); timer = setTimeout(settle, 140); };
+  addEventListener("scroll", () => {
+    const y = scrollY;
+    if (y !== lastY) scrollUp = y < lastY;
+    lastY = y;
+    later();
+  }, { passive: true });
+  addEventListener("wheel", () => { usingTouch = false; fixes = 0; }, { passive: true });
+  // Mientras el dedo está apoyado no se hace nada; al soltar, se espera a que frene
+  addEventListener("touchstart", (e) => {
+    usingTouch = true; touching = true; fixes = 0; clearTimeout(timer);
+    startY = moveY = e.touches[0]?.clientY ?? 0;
+  }, { passive: true });
+  addEventListener("touchmove", (e) => { moveY = e.touches[0]?.clientY ?? moveY; }, { passive: true });
+  const end = () => {
+    touching = false;
+    if (Math.abs(moveY - startY) < 8) return; // fue un toque, no un deslizamiento
+    fingerUp = moveY > startY; // dedo hacia abajo = la página sube
+    later();
+  };
+  addEventListener("touchend", end, { passive: true });
+  addEventListener("touchcancel", end, { passive: true });
+})();
 
 // La carta se dibuja apenas carga la página (Google también la lee);
 // la carga y los idiomas quedan por encima.

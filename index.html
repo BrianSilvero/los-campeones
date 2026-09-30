@@ -30,7 +30,10 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Pinyon+Script&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Fuentes sin bloquear la primera pantalla -->
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Pinyon+Script&family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Pinyon+Script&family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Pinyon+Script&family=Inter:wght@400;500;600;700&display=swap" /></noscript>
   <link rel="stylesheet" href="css/styles.css" />
 
   <!-- Datos estructurados para Google (ficha del restaurante) -->
@@ -98,12 +101,6 @@
     <p class="lang-title" id="lang-title"></p>
     <div class="lang-options" id="lang-options"></div>
   </section>
-
-  <div id="doors" class="doors" aria-hidden="true">
-    <div class="door door-l"><span class="door-frame"></span><span class="door-filete" data-filete></span></div>
-    <div class="door door-r"><span class="door-frame"></span><span class="door-filete" data-filete></span></div>
-    <img class="doors-logo" src="img/logo-negativo.png" alt="" width="320" height="144" />
-  </div>
 
   <!-- Brasas delicadas de fondo en la carta -->
   <canvas class="ember-canvas ember-bg" data-embers="soft" aria-hidden="true"></canvas>
