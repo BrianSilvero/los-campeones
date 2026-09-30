@@ -1736,3 +1736,8 @@ a, button, label, input, .row, [role="switch"] { touch-action: manipulation; }
    (carga diferida), así que no aparecían aunque existieran. Mientras no cargó
    queda invisible y sin ocupar lugar; al cargar se muestra como siempre. */
 .thumb:not(.has) { display: block; position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+/* Carta: sin rebote en los bordes. En el celular, al subir rápido hasta el
+   principio, el rebote activaba "Volver a cargar" del navegador, que tapaba
+   la cabecera y las categorías mientras el dedo seguía apoyado. */
+html:has(> body.page-menu), body.page-menu { overscroll-behavior-y: none; }
